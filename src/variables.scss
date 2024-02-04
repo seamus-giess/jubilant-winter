@@ -2,6 +2,9 @@
 @import "bootstrap/scss/functions"; /* Override Bootstrap's variables here */
 
 $headings-font-family: monospace;
+$font-family-base: monospace;
+$body-bg: black;
+$body-color: white;
 
 @import "bootstrap/scss/variables";
 @import "bootstrap/scss/variables-dark";
