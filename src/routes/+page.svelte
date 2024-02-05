@@ -31,7 +31,7 @@
     <span>
       what? you expected something to be <a
         href="/the-cool-thing-youre-hoping-for"
-        on:click|once|preventDefault={() => (disappointingTextHidden = false)}
+        on:click|preventDefault={() => (disappointingTextHidden = false)}
         >here</a
       >?
     </span>
