@@ -2,6 +2,7 @@
   import { FontAwesomeIcon } from "@fortawesome/svelte-fontawesome";
   import { faArrowDown } from "@fortawesome/free-solid-svg-icons";
   import { config } from "@fortawesome/fontawesome-svg-core";
+  import { Tooltip } from "bootstrap";
 
   import "@fortawesome/fontawesome-svg-core/styles.css"; // Import the CSS
   config.autoAddCss = false; // Tell Font Awesome to skip adding the CSS automatically since it's being imported above
@@ -9,55 +10,67 @@
   let disappointingTextHidden = true;
 </script>
 
-<div class="container centered">
-  <div class="hero__content">
-    <h1>welcome to rot-dot-bot</h1>
-    <span>please enjoy your stay</span>
+<div class="scroll-wrapper">
+  <div class="container centered">
+    <div class="hero__content">
+      <h1>welcome to rot-dot-bot</h1>
+      <span>please enjoy your stay</span>
+    </div>
+    <div class="hero__scroll-prompt">
+      <div class="arrow">
+        <FontAwesomeIcon icon={faArrowDown} size="2x" />
+      </div>
+      <div class="arrow">
+        <FontAwesomeIcon icon={faArrowDown} size="2x" />
+      </div>
+      <div class="arrow">
+        <FontAwesomeIcon icon={faArrowDown} size="2x" />
+      </div>
+    </div>
   </div>
-  <div class="hero__scroll-prompt">
-    <div class="arrow">
-      <FontAwesomeIcon icon={faArrowDown} size="2x" />
-    </div>
-    <div class="arrow">
-      <FontAwesomeIcon icon={faArrowDown} size="2x" />
-    </div>
-    <div class="arrow">
-      <FontAwesomeIcon icon={faArrowDown} size="2x" />
-    </div>
-  </div>
-</div>
-<div class="container centered">
-  <div class="centered">
-    <span>
-      what? you expected something to be <a
-        href="/the-cool-thing-youre-hoping-for"
-        on:click|preventDefault={() => (disappointingTextHidden = false)}
-        >here</a
-      >?
-    </span>
-    <div style="position: absolute; top: 100%;" class="centered">
-      <span
-        class={disappointingTextHidden ? "hidden" : ""}
-        style="transition: opacity 1s;"
-      >
-        well, you may be disappointed
+  <div class="container centered">
+    <div class="centered">
+      <span>
+        what? you expected something to be <a
+          href="/the-cool-thing-youre-hoping-for"
+          on:click|preventDefault={() => (disappointingTextHidden = false)}
+          on:auxclick|preventDefault={() => new Tooltip(this)}
+          data-bs-title="WOAH there, pardner! Who said you could push me around?"
+          data-bs-html="true">here</a
+        >?
       </span>
-      <span
-        class={disappointingTextHidden ? "hidden" : ""}
-        style="transition: opacity 1s 1.5s;"
-      >
-        there's just this portfolio website...
-      </span>
+      <div style="position: absolute; top: 100%;" class="centered">
+        <span
+          class={disappointingTextHidden ? "hidden" : ""}
+          style="transition: opacity 1s;"
+        >
+          well, you may be disappointed
+        </span>
+        <span
+          class={disappointingTextHidden ? "hidden" : ""}
+          style="transition: opacity 1s 1.5s;"
+        >
+          there's just this portfolio website...
+        </span>
+      </div>
     </div>
   </div>
 </div>
 
 <style lang="scss">
+  .scroll-wrapper {
+    overflow: scroll;
+    scroll-snap-type: y mandatory;
+    max-height: 100vh;
+    max-height: 100dvh;
+  }
   .container {
     height: 100vh;
-    height: 200;
+    height: 100dvh;
 
     padding: 3rem;
+
+    scroll-snap-align: center;
   }
   .centered {
     display: flex;
