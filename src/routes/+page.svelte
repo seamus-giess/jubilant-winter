@@ -30,7 +30,7 @@
 
   let chattyLinkColor: string = "#0d6efd";
   let chattyBoxCurrentText = "";
-  let chattyLinkOffset = "";
+  let chattyLinkOffset = 0;
   let chattyBoxStep = 1;
   let chattyVoice = "/sounds/voice_toriel.mp3";
 
@@ -126,7 +126,7 @@
         <a
           id="externalLink"
           href="/the-coolest-thing-you-will-ever-see"
-          style="color: {chattyLinkColor}; top: {chattyLinkOffset}; display: inline; position: relative;"
+          style="color: {chattyLinkColor}; top: {chattyLinkOffset}; display: inline; position: relative; transition: top 4s ease-in-out 2s;"
           on:mouseover|stopImmediatePropagation={stopIt}
           on:focus|stopImmediatePropagation={stopIt}
           on:blur|stopImmediatePropagation={stopIt}
