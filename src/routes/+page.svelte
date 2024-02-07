@@ -18,7 +18,7 @@
   const chattyBoxDialogue = [
     "* WOAH there, pardner!\n* Who said you could middle\n  click on me?",
     "* HMM?\n* So you're ASKIN' me to\n  visit a site?",
-    "* OK, just for you,\n  pumpkin.",
+    "* Okay, just for you,\n  pumpkin.",
     "",
     "* HMM?\n* You wanted me to go\n  somewhere?",
     "* Alrighty, how's this?",
@@ -30,9 +30,10 @@
 
   let chattyLinkColor: string = "#0d6efd";
   let chattyBoxCurrentText = "";
-  let chattyLinkOffset = 0;
+  let chattyLinkOffset = "0";
   let chattyBoxStep = 1;
   let chattyVoice = "/sounds/voice_toriel.mp3";
+  let isChattyTimeout = false;
 
   let chattyInterval: number;
 
@@ -50,6 +51,9 @@
     if (!isOpen && isDoneReveal) {
       return;
     }
+    if (isChattyTimeout) {
+      return;
+    }
     isOpen = true;
 
     const dialogue = chattyBoxDialogue.shift();
@@ -60,6 +64,10 @@
           break;
         case 2:
           chattyLinkOffset = "-20px";
+          isChattyTimeout = true;
+          setTimeout(() => {
+            isChattyTimeout = false;
+          }, 4000);
           break;
         case 3:
           let origin = window.location;
