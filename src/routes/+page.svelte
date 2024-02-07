@@ -2,12 +2,14 @@
   import { FontAwesomeIcon } from "@fortawesome/svelte-fontawesome";
   import { faArrowDown } from "@fortawesome/free-solid-svg-icons";
   import { config } from "@fortawesome/fontawesome-svg-core";
-  import { Tooltip } from "bootstrap";
+  import { Tooltip } from "@sveltestrap/sveltestrap";
 
   import "@fortawesome/fontawesome-svg-core/styles.css"; // Import the CSS
   config.autoAddCss = false; // Tell Font Awesome to skip adding the CSS automatically since it's being imported above
 
   let disappointingTextHidden = true;
+  let isOpen = false;
+  let isDoneReveal = false;
 </script>
 
 <div class="scroll-wrapper">
@@ -29,17 +31,50 @@
     </div>
   </div>
   <div class="container centered">
-    <div class="centered">
-      <span>
+    <div id="test" class="centered">
+      <span
+        role="banner"
+        on:contextmenu|stopImmediatePropagation={(event) => {
+          if (disappointingTextHidden) {
+            event.preventDefault();
+          }
+        }}
+      >
         what? you expected something to be <a
+          id="externalLink"
           href="/the-cool-thing-youre-hoping-for"
-          on:click|preventDefault={() => (disappointingTextHidden = false)}
-          on:auxclick|preventDefault={() => new Tooltip(this)}
-          data-bs-title="WOAH there, pardner! Who said you could push me around?"
-          data-bs-html="true">here</a
+          on:click|preventDefault={() => {
+            disappointingTextHidden = false;
+            isOpen = false;
+          }}
+          on:auxclick|preventDefault={(event) => {
+            if (event.button !== 1) return false;
+            if (!isOpen && isDoneReveal) {
+              return;
+            }
+            isOpen = !isDoneReveal ? true : false;
+            isDoneReveal = true;
+          }}
+          on:mouseover|stopImmediatePropagation={() => null}
+          on:focus|stopImmediatePropagation={() => null}
+          on:blur|stopImmediatePropagation={() => null}
+          on:mouseleave|stopImmediatePropagation={() => null}
+        >
+          here</a
+        ><Tooltip
+          bind:isOpen
+          target="externalLink"
+          style="border: 1px solid white; background-color: black; --bs-tooltip-max-width: auto;"
+          ><div class="text-white text-start">
+            WOAH there, pardner!<br />
+            Who said you could push me around?
+          </div></Tooltip
         >?
       </span>
-      <div style="position: absolute; top: 100%;" class="centered">
+      <div
+        style="position: absolute; top: 100%;"
+        class="centered {disappointingTextHidden ? 'hidden' : ''}"
+      >
         <span
           class={disappointingTextHidden ? "hidden" : ""}
           style="transition: opacity 1s;"
@@ -82,6 +117,7 @@
   }
   .hidden {
     opacity: 0;
+    pointer-events: none;
   }
   .hero {
     &__content {
