@@ -96,16 +96,6 @@
   }
 </script>
 
-<svelte:head>
-  <link
-    rel="preload"
-    href="/sounds/voice_sans.mp3"
-    as="audio"
-    type="audio/mpeg"
-    crossorigin="anonymous"
-  />
-</svelte:head>
-
 <svelte:window on:load={() => (isFinishedLoading = true)} />
 
 <div class="scroll-wrapper">
@@ -185,6 +175,11 @@
       </div>
     </div>
   </div>
+</div>
+
+<div>
+  <audio id="voice_toriel" src="/sounds/voice_toriel.mp3" preload="auto"
+  ></audio>
 </div>
 
 <style lang="scss">
