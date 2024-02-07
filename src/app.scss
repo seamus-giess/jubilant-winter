@@ -34,6 +34,13 @@
 @import "bootstrap/scss/helpers";
 @import "bootstrap/scss/utilities/api";
 
-.tooltip .tooltip-arrow {
+.popover .popover-arrow {
     display: none;
+}
+
+@font-face {
+    font-family: "DTM-Mono";
+    font-style: normal;
+    font-weight: 500;
+    src: url("fonts/dtm-mono.woff") format('woff');
 }

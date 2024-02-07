@@ -1,16 +1,112 @@
-<script>
+<script lang="ts">
   import { FontAwesomeIcon } from "@fortawesome/svelte-fontawesome";
   import { faArrowDown } from "@fortawesome/free-solid-svg-icons";
   import { config } from "@fortawesome/fontawesome-svg-core";
-  import { Tooltip } from "@sveltestrap/sveltestrap";
 
   import "@fortawesome/fontawesome-svg-core/styles.css"; // Import the CSS
+  import { browser } from "$app/environment";
   config.autoAddCss = false; // Tell Font Awesome to skip adding the CSS automatically since it's being imported above
+
+  let isFinishedLoading = browser
+    ? document.readyState === "complete" ?? false
+    : false;
 
   let disappointingTextHidden = true;
   let isOpen = false;
   let isDoneReveal = false;
+
+  const chattyBoxDialogue = [
+    "* WOAH there, pardner!\n* Who said you could middle\n  click on me?",
+    "* HMM?\n* So you're ASKIN' me to\n  visit a site?",
+    "* OK, just for you,\n  pumpkin.",
+    "",
+    "* HMM?\n* You wanted me to go somewhere?",
+    "* Alrighty, how's this?",
+    "",
+    "* HMM?\n* That wasn't what you\n  meant?",
+    "* Okay, think I got it.",
+    "",
+  ];
+
+  let chattyLinkColor: string = "#0d6efd";
+  let chattyBoxCurrentText = "";
+  let chattyLinkOffset = "";
+  let chattyBoxStep = 1;
+  let chattyVoice = "/sounds/voice_toriel.mp3";
+
+  let chattyInterval: number;
+
+  function stopIt(event: Event) {
+    event.stopPropagation();
+    event.stopImmediatePropagation();
+    return false;
+  }
+
+  function haveFun(event: MouseEvent) {
+    event.preventDefault();
+    if (event.button !== 1) {
+      return false;
+    }
+    if (!isOpen && isDoneReveal) {
+      return;
+    }
+    isOpen = true;
+
+    const dialogue = chattyBoxDialogue.shift();
+    if (dialogue === "") {
+      switch (chattyBoxStep) {
+        case 1:
+          chattyLinkColor = "#6f42c1";
+          break;
+        case 2:
+          chattyLinkOffset = "-20px";
+          break;
+        case 3:
+          let origin = window.location;
+          origin.pathname = "/";
+          window.location = origin;
+      }
+      chattyBoxStep++;
+      isOpen = false;
+      return;
+    }
+    if (!dialogue) {
+      isDoneReveal = true;
+      return;
+    }
+    // push the dialogue to the chattyBoxCurrentText one character at a time
+    chattyBoxCurrentText = "";
+    let i = 0;
+    clearInterval(chattyInterval);
+    chattyInterval = setInterval(() => {
+      if (i < dialogue.length) {
+        let re = /[A-Za-z]/;
+        if (dialogue[i].match(re)) {
+          let audio = new Audio(chattyVoice);
+          audio.preservesPitch = false;
+          audio.play();
+          audio.playbackRate = 1;
+        }
+        chattyBoxCurrentText += dialogue[i];
+        i++;
+      } else {
+        clearInterval(chattyInterval);
+      }
+    }, 50);
+  }
 </script>
+
+<svelte:head>
+  <link
+    rel="preload"
+    href="/sounds/voice_sans.mp3"
+    as="audio"
+    type="audio/mpeg"
+    crossorigin="anonymous"
+  />
+</svelte:head>
+
+<svelte:window on:load={() => (isFinishedLoading = true)} />
 
 <div class="scroll-wrapper">
   <div class="container centered">
@@ -18,7 +114,7 @@
       <h1>welcome to rot-dot-bot</h1>
       <span>please enjoy your stay</span>
     </div>
-    <div class="hero__scroll-prompt">
+    <div class="hero__scroll-prompt {isFinishedLoading ? '' : 'opacity-0'}">
       <div class="arrow">
         <FontAwesomeIcon icon={faArrowDown} size="2x" />
       </div>
@@ -30,45 +126,44 @@
       </div>
     </div>
   </div>
-  <div class="container centered">
+  <div class="container centered {isFinishedLoading ? '' : 'd-none'}">
     <div id="test" class="centered">
       <span
         role="banner"
-        on:contextmenu|stopImmediatePropagation={(event) => {
-          if (disappointingTextHidden) {
-            event.preventDefault();
-          }
-        }}
+        on:contextmenu|preventDefault|stopImmediatePropagation={() => null}
       >
-        what? you expected something to be <a
+        what? you expected something to be
+        <a
           id="externalLink"
-          href="/the-cool-thing-youre-hoping-for"
-          on:click|preventDefault={() => {
+          href="/the-coolest-thing-you-will-ever-see"
+          style="color: {chattyLinkColor}; top: {chattyLinkOffset}; display: inline; position: relative;"
+          on:mouseover|stopImmediatePropagation={stopIt}
+          on:focus|stopImmediatePropagation={stopIt}
+          on:blur|stopImmediatePropagation={stopIt}
+          on:mouseleave|stopImmediatePropagation={stopIt}
+          on:click|preventDefault|stopImmediatePropagation={() => {
             disappointingTextHidden = false;
-            isOpen = false;
           }}
-          on:auxclick|preventDefault={(event) => {
-            if (event.button !== 1) return false;
-            if (!isOpen && isDoneReveal) {
-              return;
-            }
-            isOpen = !isDoneReveal ? true : false;
-            isDoneReveal = true;
+          on:auxclick={haveFun}
+          on:auxclick|once|preventDefault={() => {
+            console.log(
+              "%c*Teleports behind once-off auxclick event*",
+              "color:grey",
+            );
+            console.log('> %c"Nothing personal, kid."', "color:violet");
+            setTimeout(() => {
+              console.log('> %c"Nani?!"', "color:lightblue");
+            }, 3000);
           }}
-          on:mouseover|stopImmediatePropagation={() => null}
-          on:focus|stopImmediatePropagation={() => null}
-          on:blur|stopImmediatePropagation={() => null}
-          on:mouseleave|stopImmediatePropagation={() => null}
         >
+          <div
+            id="chattyBox"
+            class={!isOpen ? "hidden" : ""}
+            style="border: 2px solid white; border-radius: 0; background-color: black; --bs-tooltip-max-width: auto; position: absolute; left:100%; bottom: 100%;"
+          >
+            {chattyBoxCurrentText}
+          </div>
           here</a
-        ><Tooltip
-          bind:isOpen
-          target="externalLink"
-          style="border: 1px solid white; background-color: black; --bs-tooltip-max-width: auto;"
-          ><div class="text-white text-start">
-            WOAH there, pardner!<br />
-            Who said you could push me around?
-          </div></Tooltip
         >?
       </span>
       <div
@@ -93,6 +188,17 @@
 </div>
 
 <style lang="scss">
+  #chattyBox {
+    width: 260px;
+    height: 75px;
+    font-size: 0.8rem;
+    padding: 0.5rem;
+    font-family: DTM-Mono;
+    white-space: pre-wrap;
+    display: flex;
+    flex-direction: row;
+    color: white;
+  }
   .scroll-wrapper {
     overflow: scroll;
     scroll-snap-type: y mandatory;
@@ -129,6 +235,8 @@
       position: absolute;
       bottom: 1rem;
       gap: 0.25rem;
+      opacity: 1;
+      transition: opacity 4s;
 
       display: flex;
       flex-direction: column;
