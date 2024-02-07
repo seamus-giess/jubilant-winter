@@ -20,7 +20,7 @@
     "* HMM?\n* So you're ASKIN' me to\n  visit a site?",
     "* OK, just for you,\n  pumpkin.",
     "",
-    "* HMM?\n* You wanted me to go somewhere?",
+    "* HMM?\n* You wanted me to go\n  somewhere?",
     "* Alrighty, how's this?",
     "",
     "* HMM?\n* That wasn't what you\n  meant?",
