@@ -1,27 +1,24 @@
 <svelte:options accessors />
 
 <script lang="ts">
-    import { Styles } from "@sveltestrap/sveltestrap";
-    import type { Style } from "svelte/types/compiler/interfaces";
+    type Action = () => void;
 
     const speakingDelay = 50;
+    const longSpeakingPause = 10;
+    const shortSpeakingPause = 5;
 
     export let style: string = "";
-
     /**
-     * @type {string|Function[]} The speech to say per click. Functions will be called instead and the text box will be closed.
+     * @type {string|Action[]} The speech to say per click. Functions will be called instead and the text box will be closed.
      */
-    export let textOrActions: (string | (() => void))[];
-
-    const textOrActionsArray = textOrActions;
-
+    export let dialogueOrActions: (string | Action)[];
     export let voiceUri: string | null = null;
+    // Copy the prop so that we can mutate it without consequence.
+    const dialogueOrActionOrder = dialogueOrActions;
 
     let isOpen = false;
-
     let currentDialogue: string = "";
 
-    // TODO add timeout functionality the callables can induce to force a wait time.
     let isSleeping: boolean = false;
     export function sleep(time: number) {
         isSleeping = true;
@@ -30,30 +27,26 @@
         }, time);
     }
 
-    function enunciate(character: string) {
+    function enunciate() {
         if (!voiceUri) {
             return;
         }
-
-        const loud = new Audio(voiceUri);
-        loud.preservesPitch = false;
-        loud.play();
-        loud.playbackRate = 1;
+        new Audio(voiceUri).play();
     }
 
-    let sayings: number[] = [];
+    let scheduledEnunciations: number[] = [];
 
     function say(characters: string[]): void {
         let speakingOffset = 0;
         characters.forEach((character) => {
-            let re = /[^\?\,\.\!]/;
-            let isSpoken = character.match(re);
+            const notPunctuation = /[^\?\,\.\!]/;
+            const isSpoken = character.match(notPunctuation);
 
-            sayings.push(
+            scheduledEnunciations.push(
                 setTimeout(() => {
                     currentDialogue += character;
                     if (isSpoken) {
-                        enunciate(character);
+                        enunciate();
                     }
                 }, speakingDelay * speakingOffset),
             );
@@ -62,10 +55,10 @@
                 case "?":
                 case "!":
                 case ".":
-                    speakingOffset += 10;
+                    speakingOffset += longSpeakingPause;
                     break;
                 case ",":
-                    speakingOffset += 5;
+                    speakingOffset += shortSpeakingPause;
                     break;
                 default:
                     speakingOffset++;
@@ -77,7 +70,7 @@
     function updateDialogue(text: string): void {
         currentDialogue = "";
 
-        let characters = text.split("");
+        const characters = text.split("");
         say(characters);
     }
 
@@ -86,27 +79,26 @@
             return;
         }
 
-        const textOrAction = textOrActionsArray.shift();
-        textOrActions = textOrActions;
+        const next = dialogueOrActionOrder.shift();
 
-        if (typeof textOrAction === "undefined") {
+        if (typeof next === "undefined") {
             return;
         }
 
-        sayings.forEach((saying) => {
+        scheduledEnunciations.forEach((saying) => {
             clearTimeout(saying);
         });
 
-        if (typeof textOrAction === "function") {
+        if (typeof next === "function") {
             isOpen = false;
-            let action = textOrAction;
+            const action = next;
             action();
             return;
         }
 
         isOpen = true;
 
-        let text = textOrAction;
+        const text = next;
         updateDialogue(text);
     }
 </script>
@@ -133,33 +125,30 @@
 </div>
 
 <style lang="scss">
-    button {
-        outline: none;
-    }
     .block-wrapper {
         position: relative;
     }
     .chat-box {
         position: absolute;
-        cursor: default;
+        left: 100%;
+        bottom: 100%;
+        width: 260px;
+        height: 75px;
 
         border: 2px solid white;
         border-radius: 0;
         background-color: black;
-        position: absolute;
-        left: 100%;
-        bottom: 100%;
-
-        width: 260px;
-        height: 75px;
-        font-size: 0.8rem;
         padding: 0.5rem;
-        font-family: DTM-Mono;
-        white-space: pre-wrap;
+        outline: none;
+
         display: flex;
         flex-direction: row;
         text-align: start;
+        white-space: pre-wrap;
+
         color: white;
+        font-size: 0.8rem;
+        font-family: DTM-Mono;
 
         &.hidden {
             display: none;

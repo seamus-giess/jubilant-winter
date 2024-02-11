@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { eggs } from "$lib/stores/FoundEggs";
   import { config } from "@fortawesome/fontawesome-svg-core";
   import ChattyBlock from "$lib/components/ChattyBlock.svelte";
 
@@ -24,7 +25,11 @@
   }
 </script>
 
-<svelte:window on:load={() => (isFinishedLoading = true)} />
+<svelte:window
+  on:load={() => {
+    isFinishedLoading = true;
+  }}
+/>
 
 <div class="scroll-wrapper">
   <div class="container centered">
@@ -44,7 +49,13 @@
           bind:this={chattyBlock}
           style="display: inline-block;"
           voiceUri="/sounds/voice_toriel.mp3"
-          textOrActions={[
+          dialogueOrActions={[
+            () => {
+              eggs.update((eggs) => {
+                eggs.talkingLink = true;
+                return eggs;
+              });
+            },
             "* WOAH there, pardner!\n* Who said you could middle\n  click on me?",
             "* HMM?\n* So you're ASKIN' me to\n  visit a site?",
             "* Okay, just for you,\n  pumpkin.",
@@ -58,6 +69,10 @@
             "* HMM?\n* That wasn't what you\n  meant?",
             "* Okay, think I got it.",
             () => {
+              eggs.update((eggs) => {
+                eggs.talkingLink = true;
+                return eggs;
+              });
               let origin = window.location;
               origin.pathname = "/";
               window.location = origin;
