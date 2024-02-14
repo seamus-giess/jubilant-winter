@@ -6,7 +6,20 @@
   import "@fortawesome/fontawesome-svg-core/styles.css"; // Import the CSS
   import { browser } from "$app/environment";
   import ScrollPrompt from "$lib/components/ScrollPrompt.svelte";
+  import { Input } from "@sveltestrap/sveltestrap";
   config.autoAddCss = false; // Tell Font Awesome to skip adding the CSS automatically since it's being imported above
+
+  let visibleSteps = {
+    talking_link: true,
+    scroll_toggle: false,
+  };
+  let remainingSteps = Object.keys(visibleSteps) as Array<
+    keyof typeof visibleSteps
+  >;
+
+  let currentStep = remainingSteps.shift();
+
+  let isScrollSnapping = true;
 
   let isFinishedLoading = browser
     ? document.readyState === "complete" ?? false
@@ -31,15 +44,21 @@
   }}
 />
 
-<div class="scroll-wrapper">
-  <div class="container centered">
+<div class="scroll-wrapper {isScrollSnapping ? 'is-snapping' : ''}">
+  <div class="container">
     <h1>welcome to rot-dot-bot</h1>
     <span>please enjoy your stay</span>
-    <ScrollPrompt isVisible={isFinishedLoading} />
+    <ScrollPrompt
+      isVisible={isFinishedLoading && currentStep === "talking_link"}
+    />
   </div>
 
-  <div class="container centered {isFinishedLoading ? '' : 'd-none'}">
-    <div id="test" class="centered">
+  <div
+    class="container {isFinishedLoading && visibleSteps.talking_link
+      ? ''
+      : 'd-none'}"
+  >
+    <div style="position: relative; display: content;">
       <span
         role="banner"
         on:contextmenu|preventDefault|stopImmediatePropagation={() => null}
@@ -48,36 +67,34 @@
         <ChattyBlock
           bind:this={chattyBlock}
           style="display: inline-block;"
-          voiceUri="/sounds/voice_toriel.mp3"
-          dialogueOrActions={[
-            () => {
-              eggs.update((eggs) => {
-                eggs.talkingLink = true;
-                return eggs;
-              });
-            },
-            "* WOAH there, pardner!\n* Who said you could middle\n  click on me?",
-            "* HMM?\n* So you're ASKIN' me to\n  visit a site?",
-            "* Okay, just for you,\n  pumpkin.",
-            () => (chattyBlockText.style.color = "#6f42c1"),
-            "* HMM?\n* You wanted me to go\n  somewhere?",
-            "* Alrighty, how's this?",
-            () => {
-              chattyBlockText.style.top = "-20px";
-              chattyBlock.sleep(4000);
-            },
-            "* HMM?\n* That wasn't what you\n  meant?",
-            "* Okay, think I got it.",
-            () => {
-              eggs.update((eggs) => {
-                eggs.talkingLink = true;
-                return eggs;
-              });
-              let origin = window.location;
-              origin.pathname = "/";
-              window.location = origin;
-            },
-          ]}
+          voiceUri={$eggs?.talkingLink !== true
+            ? "/sounds/voice_toriel.mp3"
+            : undefined}
+          dialogueOrActions={$eggs?.talkingLink !== true
+            ? [
+                "* WOAH there, pardner!\n* Who said you could middle\n  click on me?",
+                "* HMM?\n* So you're ASKIN' me to\n  visit a site?",
+                "* Okay, just for you,\n  pumpkin.",
+                () => (chattyBlockText.style.color = "#6f42c1"),
+                "* HMM?\n* You wanted me to go\n  somewhere?",
+                "* Alrighty, how's this?",
+                () => {
+                  chattyBlockText.style.top = "-20px";
+                  chattyBlock.sleep(4000);
+                },
+                "* HMM?\n* That wasn't what you\n  meant?",
+                "* Okay, think I got it.",
+                () => {
+                  eggs.update((eggs) => {
+                    eggs.talkingLink = true;
+                    return eggs;
+                  });
+                  let origin = window.location;
+                  origin.pathname = "/";
+                  window.location = origin;
+                },
+              ]
+            : ["* ...\n* No one's home."]}
         >
           <a
             id="externalLink"
@@ -88,9 +105,17 @@
             on:blur={doNothing}
             on:mouseleave={doNothing}
             on:contextmenu={doNothing}
-            on:click={(event) => {
+            on:click|once={(event) => {
               doNothing(event);
               disappointingTextHidden = false;
+              setTimeout(() => {
+                currentStep = remainingSteps.shift();
+                if (!currentStep) {
+                  return;
+                }
+                visibleSteps[currentStep] = true;
+                console.log("currentStep", currentStep, visibleSteps);
+              }, 3000);
             }}
             on:auxclick|preventDefault={(event) =>
               event.button === 1 && chattyBlock.progress()}
@@ -99,23 +124,35 @@
           </a>
         </ChattyBlock>?
       </span>
-      <div
-        style="position: absolute; top: 100%;"
-        class="centered {disappointingTextHidden ? 'hidden' : ''}"
-      >
-        <span
+      <div style="position: absolute; top: 100%; display: content;">
+        <div
           class={disappointingTextHidden ? "hidden" : ""}
           style="transition: opacity 1s;"
         >
           well, you may be disappointed
-        </span>
-        <span
+        </div>
+        <div
           class={disappointingTextHidden ? "hidden" : ""}
           style="transition: opacity 1s 1.5s;"
         >
           there's just this portfolio website...
-        </span>
+        </div>
       </div>
+    </div>
+    <ScrollPrompt isVisible={currentStep === "scroll_toggle"} />
+  </div>
+
+  <div class="container {visibleSteps.scroll_toggle ? '' : 'd-none'}">
+    <span>i hope you've been enjoying the scroll-snap experience so far</span>
+    <span>if you don't like it, feel free to <b>turn it off</b></span>
+    <div class="mt-3">
+      <span>scroll mode:</span>
+      <Input
+        type="switch"
+        label={isScrollSnapping ? "ez mode" : "imprecise, RSI mode"}
+        theme="dark"
+        bind:checked={isScrollSnapping}
+      />
     </div>
   </div>
 </div>
@@ -130,9 +167,12 @@
   }
   .scroll-wrapper {
     overflow: scroll;
-    scroll-snap-type: y mandatory;
     max-height: 100vh;
     max-height: 100dvh;
+
+    &.is-snapping {
+      scroll-snap-type: y mandatory;
+    }
   }
   .container {
     height: 100vh;
@@ -141,8 +181,7 @@
     padding: 3rem;
 
     scroll-snap-align: center;
-  }
-  .centered {
+
     display: flex;
     flex-direction: column;
     justify-content: center;
