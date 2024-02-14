@@ -39,7 +39,7 @@
     function say(characters: string[]): void {
         let speakingOffset = 0;
         characters.forEach((character) => {
-            const notPunctuation = /[^\?\,\.\!]/;
+            const notPunctuation = /[^\*\?\,\.\!]/;
             const isSpoken = character.match(notPunctuation);
 
             scheduledEnunciations.push(
