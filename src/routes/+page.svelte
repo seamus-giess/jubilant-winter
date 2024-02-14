@@ -30,6 +30,38 @@
   let chattyBlock: ChattyBlock;
   let chattyBlockText: HTMLSpanElement;
 
+  const firstChattyList = [
+    "* WOAH there, pardner!\n* Who said you could middle\n  click on me?",
+    "* HMM?\n* So you're ASKIN' me to\n  visit a site?",
+    "* Okay, just for you,\n  pumpkin.",
+    () => (chattyBlockText.style.color = "#6f42c1"),
+    "* HMM?\n* You wanted me to go\n  somewhere?",
+    "* Alrighty, how's this?",
+    () => {
+      chattyBlockText.style.top = "-20px";
+      chattyBlock.sleep(4000);
+    },
+    "* HMM?\n* That wasn't what you\n  meant?",
+    "* Okay, think I got it.",
+    () => {
+      $eggs.talkingLink = true;
+
+      let origin = window.location;
+      origin.pathname = "/";
+      window.location = origin;
+    },
+  ];
+  let chattyBlockSuccessiveList = [
+    "* ...\n* No one's home.",
+    () => {
+      chattyBlock.dialogueOrActionOrder = [...chattyBlockSuccessiveList];
+    },
+  ];
+  let chattyBlockActions =
+    $eggs?.talkingLink !== true
+      ? firstChattyList
+      : [...chattyBlockSuccessiveList];
+
   function doNothing(event: Event) {
     event.preventDefault();
     event.stopPropagation();
@@ -68,34 +100,13 @@
           bind:this={chattyBlock}
           style="display: inline-block;"
           voiceUri={$eggs?.talkingLink !== true
-            ? "/sounds/voice_toriel.mp3"
+            ? "/sounds/voice_txt.mp3"
             : undefined}
-          dialogueOrActions={$eggs?.talkingLink !== true
-            ? [
-                "* WOAH there, pardner!\n* Who said you could middle\n  click on me?",
-                "* HMM?\n* So you're ASKIN' me to\n  visit a site?",
-                "* Okay, just for you,\n  pumpkin.",
-                () => (chattyBlockText.style.color = "#6f42c1"),
-                "* HMM?\n* You wanted me to go\n  somewhere?",
-                "* Alrighty, how's this?",
-                () => {
-                  chattyBlockText.style.top = "-20px";
-                  chattyBlock.sleep(4000);
-                },
-                "* HMM?\n* That wasn't what you\n  meant?",
-                "* Okay, think I got it.",
-                () => {
-                  $eggs.talkingLink = true;
-
-                  let origin = window.location;
-                  origin.pathname = "/";
-                  window.location = origin;
-                },
-              ]
-            : ["* ...\n* No one's home."]}
+          dialogueOrActions={chattyBlockActions}
         >
           <a
             id="externalLink"
+            style={$eggs?.talkingLink ? "color: #6f42c1;" : ""}
             href="/the-coolest-thing-you-will-ever-see"
             bind:this={chattyBlockText}
             on:mouseover={doNothing}

@@ -14,9 +14,10 @@
     export let dialogueOrActions: (string | Action)[];
     export let voiceUri: string | null = null;
     // Copy the prop so that we can mutate it without consequence.
-    const dialogueOrActionOrder = dialogueOrActions;
+    export let dialogueOrActionOrder = dialogueOrActions;
 
     let isOpen = false;
+    let currentDialogueFull: string;
     let currentDialogue: string = "";
 
     let isSleeping: boolean = false;
@@ -26,6 +27,8 @@
             isSleeping = false;
         }, time);
     }
+
+    let isSpeaking = false;
 
     function enunciate() {
         if (!voiceUri) {
@@ -38,7 +41,7 @@
 
     function say(characters: string[]): void {
         let speakingOffset = 0;
-        characters.forEach((character) => {
+        characters.forEach((character, index) => {
             const notPunctuation = /[^\*\?\,\.\!]/;
             const isSpoken = character.match(notPunctuation);
 
@@ -47,6 +50,10 @@
                     currentDialogue += character;
                     if (isSpoken) {
                         enunciate();
+                    }
+
+                    if (index === characters.length - 1) {
+                        isSpeaking = false;
                     }
                 }, speakingDelay * speakingOffset),
             );
@@ -71,11 +78,31 @@
         currentDialogue = "";
 
         const characters = text.split("");
+        isSpeaking = true;
+        currentDialogueFull = text;
         say(characters);
+    }
+
+    function stopSpeaking() {
+        scheduledEnunciations.forEach((saying) => {
+            clearTimeout(saying);
+        });
+
+        currentDialogue = currentDialogueFull;
+        if (voiceUri) {
+            new Audio(voiceUri).play();
+        }
+
+        isSpeaking = false;
     }
 
     export function progress() {
         if (isSleeping) {
+            return;
+        }
+
+        if (isSpeaking) {
+            stopSpeaking();
             return;
         }
 
@@ -84,10 +111,6 @@
         if (typeof next === "undefined") {
             return;
         }
-
-        scheduledEnunciations.forEach((saying) => {
-            clearTimeout(saying);
-        });
 
         if (typeof next === "function") {
             isOpen = false;
