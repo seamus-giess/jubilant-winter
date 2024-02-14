@@ -176,7 +176,11 @@
         theme="dark"
         bind:checked={isScrollSnapping}
         on:change|once={() => {
-          visibleSteps.form = true;
+          currentStep = remainingSteps.shift();
+          if (!currentStep) {
+            return;
+          }
+          visibleSteps[currentStep] = true;
         }}
       />
     </div>
