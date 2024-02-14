@@ -2,6 +2,7 @@
   import { eggs } from "$lib/stores/FoundEggs";
   import { config } from "@fortawesome/fontawesome-svg-core";
   import ChattyBlock from "$lib/components/ChattyBlock.svelte";
+  import Device from "svelte-device-info";
 
   import "@fortawesome/fontawesome-svg-core/styles.css"; // Import the CSS
   import { browser } from "$app/environment";
@@ -32,7 +33,9 @@
   let chattyBlockText: HTMLSpanElement;
 
   const firstChattyList = [
-    "* WOAH there, pardner!\n* Who said you could middle\n  click on me?",
+    `* WOAH there, pardner!\n* Who said you could ${
+      Device.isPhone || Device.isTablet ? "long\n press" : "middle\n  click"
+    } on me?`,
     "* HMM?\n* So you're ASKIN' me to\n  visit a site?",
     "* Okay, just for you,\n  pumpkin.",
     () => (chattyBlockText.style.color = "#6f42c1"),
@@ -66,38 +69,6 @@
     event.stopPropagation();
     event.stopImmediatePropagation();
     return false;
-  }
-
-  export function longpress(node) {
-    const TIME_MS = 300;
-    let timeoutPtr: number;
-    function handleMouseDown(e) {
-      console.log("start");
-      window.addEventListener("touchmove", handleMoveBeforeLong);
-      timeoutPtr = setTimeout(() => {
-        console.log("looooong press!");
-        window.removeEventListener("touchmove", handleMoveBeforeLong);
-        node.dispatchEvent(new CustomEvent("long"));
-      }, TIME_MS);
-    }
-    function handleMoveBeforeLong(e) {
-      console.log("move");
-      clearTimeout(timeoutPtr);
-      window.removeEventListener("touchmove", handleMoveBeforeLong);
-    }
-    function handleMouseUp(e) {
-      console.log("up");
-      clearTimeout(timeoutPtr);
-      window.removeEventListener("touchmove", handleMoveBeforeLong);
-    }
-    node.addEventListener("touchstart", handleMouseDown);
-    node.addEventListener("touchend", handleMouseUp);
-    return {
-      destroy: () => {
-        node.removeEventListener("touchstart", handleMouseDown);
-        node.removeEventListener("touchend", handleMouseUp);
-      },
-    };
   }
 </script>
 
@@ -144,7 +115,12 @@
             on:focus={doNothing}
             on:blur={doNothing}
             on:mouseleave={doNothing}
-            on:contextmenu={doNothing}
+            on:contextmenu={(event) => {
+              doNothing(event);
+              if (Device.isPhone) {
+                chattyBlock.progress();
+              }
+            }}
             on:click|once={() => {
               disappointingTextHidden = false;
               setTimeout(() => {
@@ -158,12 +134,6 @@
             }}
             on:click={(event) => {
               doNothing(event);
-            }}
-            use:longpress
-            on:long={(event) => {
-              console.log("long");
-              doNothing(event);
-              chattyBlock.progress();
             }}
             on:auxclick|preventDefault={(event) =>
               event.button === 1 && chattyBlock.progress()}
