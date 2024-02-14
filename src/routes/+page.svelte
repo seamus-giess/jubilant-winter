@@ -2,12 +2,17 @@
   import { eggs } from "$lib/stores/FoundEggs";
   import { config } from "@fortawesome/fontawesome-svg-core";
   import ChattyBlock from "$lib/components/ChattyBlock.svelte";
-  import Device from "svelte-device-info";
+
+  let Device: any;
+  onMount(() => {
+    Device = import("svelte-device-info");
+  });
 
   import "@fortawesome/fontawesome-svg-core/styles.css"; // Import the CSS
   import { browser } from "$app/environment";
   import ScrollPrompt from "$lib/components/ScrollPrompt.svelte";
   import { Input } from "@sveltestrap/sveltestrap";
+  import { onMount } from "svelte";
   config.autoAddCss = false; // Tell Font Awesome to skip adding the CSS automatically since it's being imported above
 
   let visibleSteps = {
@@ -34,7 +39,7 @@
 
   const firstChattyList = [
     `* WOAH there, pardner!\n* Who said you could ${
-      Device.isPhone || Device.isTablet ? "long\n press" : "middle\n  click"
+      Device?.isPhone || Device?.isTablet ? "long\n press" : "middle\n  click"
     } on me?`,
     "* HMM?\n* So you're ASKIN' me to\n  visit a site?",
     "* Okay, just for you,\n  pumpkin.",
@@ -117,7 +122,7 @@
             on:mouseleave={doNothing}
             on:contextmenu={(event) => {
               doNothing(event);
-              if (Device.isPhone) {
+              if (Device?.isPhone || Device?.isTablet) {
                 chattyBlock.progress();
               }
             }}
