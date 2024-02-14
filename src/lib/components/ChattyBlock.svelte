@@ -153,8 +153,17 @@
     }
     .chat-box {
         position: absolute;
+        z-index: 1;
         left: 100%;
         bottom: 100%;
+
+        @include media-breakpoint-down(sm) {
+            top: 100%;
+            right: 0;
+            left: unset;
+            bottom: unset;
+        }
+
         width: 260px;
         height: 75px;
 

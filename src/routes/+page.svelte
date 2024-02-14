@@ -12,6 +12,7 @@
   let visibleSteps = {
     talking_link: true,
     scroll_toggle: false,
+    form: false,
   };
   let remainingSteps = Object.keys(visibleSteps) as Array<
     keyof typeof visibleSteps
@@ -66,6 +67,38 @@
     event.stopImmediatePropagation();
     return false;
   }
+
+  export function longpress(node) {
+    const TIME_MS = 300;
+    let timeoutPtr: number;
+    function handleMouseDown(e) {
+      console.log("start");
+      window.addEventListener("touchmove", handleMoveBeforeLong);
+      timeoutPtr = setTimeout(() => {
+        console.log("looooong press!");
+        window.removeEventListener("touchmove", handleMoveBeforeLong);
+        node.dispatchEvent(new CustomEvent("long"));
+      }, TIME_MS);
+    }
+    function handleMoveBeforeLong(e) {
+      console.log("move");
+      clearTimeout(timeoutPtr);
+      window.removeEventListener("touchmove", handleMoveBeforeLong);
+    }
+    function handleMouseUp(e) {
+      console.log("up");
+      clearTimeout(timeoutPtr);
+      window.removeEventListener("touchmove", handleMoveBeforeLong);
+    }
+    node.addEventListener("touchstart", handleMouseDown);
+    node.addEventListener("touchend", handleMouseUp);
+    return {
+      destroy: () => {
+        node.removeEventListener("touchstart", handleMouseDown);
+        node.removeEventListener("touchend", handleMouseUp);
+      },
+    };
+  }
 </script>
 
 <svelte:window
@@ -93,7 +126,7 @@
         role="banner"
         on:contextmenu|preventDefault|stopImmediatePropagation={() => null}
       >
-        what? you expected something to be
+        what? you<br class="d-sm-none" /> expected something to be
         <ChattyBlock
           bind:this={chattyBlock}
           style="display: inline-block;"
@@ -112,8 +145,7 @@
             on:blur={doNothing}
             on:mouseleave={doNothing}
             on:contextmenu={doNothing}
-            on:click|once={(event) => {
-              doNothing(event);
+            on:click|once={() => {
               disappointingTextHidden = false;
               setTimeout(() => {
                 currentStep = remainingSteps.shift();
@@ -123,6 +155,15 @@
                 visibleSteps[currentStep] = true;
                 console.log("currentStep", currentStep, visibleSteps);
               }, 3000);
+            }}
+            on:click={(event) => {
+              doNothing(event);
+            }}
+            use:longpress
+            on:long={(event) => {
+              console.log("long");
+              doNothing(event);
+              chattyBlock.progress();
             }}
             on:auxclick|preventDefault={(event) =>
               event.button === 1 && chattyBlock.progress()}
@@ -151,17 +192,23 @@
 
   <div class="container {visibleSteps.scroll_toggle ? '' : 'd-none'}">
     <span>i hope you've been enjoying the scroll-snap experience so far</span>
-    <span>if you don't like it, feel free to <b>turn it off</b></span>
+    <span>if you don't like it, feel free to turn it off</span>
     <div class="mt-3">
-      <span>scroll mode:</span>
+      <span class="scroll-mode-switch__wrapper">scroll mode:</span>
       <Input
         type="switch"
-        label={isScrollSnapping ? "ez mode" : "imprecise, RSI mode"}
+        label={isScrollSnapping ? "ez mode" : "off"}
         theme="dark"
         bind:checked={isScrollSnapping}
+        on:change|once={() => {
+          visibleSteps.form = true;
+        }}
       />
     </div>
+    <ScrollPrompt isVisible={visibleSteps.form} />
   </div>
+
+  <div class="container {visibleSteps.form ? '' : 'd-none'}"></div>
 </div>
 
 <style lang="scss">
@@ -179,6 +226,9 @@
 
     &.is-snapping {
       scroll-snap-type: y mandatory;
+    }
+    &:not(.is-snapping) {
+      overflow: hidden;
     }
   }
   .container {
