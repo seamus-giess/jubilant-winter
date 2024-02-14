@@ -5,7 +5,7 @@
     export let isVisible: boolean = true;
 </script>
 
-<div class="scroll-prompt {isVisible ? '' : 'opacity-0'}">
+<div class="scroll-prompt {isVisible ? '' : 'hidden'}">
     <div class="arrow">
         <FontAwesomeIcon icon={faArrowDown} size="2x" />
     </div>
@@ -27,6 +27,10 @@
 
         display: flex;
         flex-direction: column;
+        &.hidden {
+            opacity: 0;
+            transition: none;
+        }
         & .arrow {
             $animationDuration: 3s;
             animation: flash $animationDuration infinite;
