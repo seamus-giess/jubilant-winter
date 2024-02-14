@@ -85,10 +85,8 @@
                 "* HMM?\n* That wasn't what you\n  meant?",
                 "* Okay, think I got it.",
                 () => {
-                  eggs.update((eggs) => {
-                    eggs.talkingLink = true;
-                    return eggs;
-                  });
+                  $eggs.talkingLink = true;
+
                   let origin = window.location;
                   origin.pathname = "/";
                   window.location = origin;
