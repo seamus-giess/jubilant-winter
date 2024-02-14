@@ -51,16 +51,14 @@
       window.location = origin;
     },
   ];
-  let chattyBlockSuccessiveList = [
+  let successiveChattyList = [
     "* ...\n* No one's home.",
     () => {
-      chattyBlock.dialogueOrActionOrder = [...chattyBlockSuccessiveList];
+      chattyBlock.dialogueOrActionOrder = [...successiveChattyList];
     },
   ];
-  let chattyBlockActions =
-    $eggs?.talkingLink !== true
-      ? firstChattyList
-      : [...chattyBlockSuccessiveList];
+  let chattyList =
+    $eggs?.talkingLink !== true ? firstChattyList : [...successiveChattyList];
 
   function doNothing(event: Event) {
     event.preventDefault();
@@ -102,7 +100,7 @@
           voiceUri={$eggs?.talkingLink !== true
             ? "/sounds/voice_txt.mp3"
             : undefined}
-          dialogueOrActions={chattyBlockActions}
+          dialogueOrActions={chattyList}
         >
           <a
             id="externalLink"
