@@ -3,16 +3,19 @@
   import { config } from "@fortawesome/fontawesome-svg-core";
   import ChattyBlock from "$lib/components/ChattyBlock.svelte";
 
-  let Device: any;
-  onMount(() => {
-    Device = import("svelte-device-info");
-  });
+  const isMobile = writable<boolean>(false);
+  async function determineMobile() {
+    const Device = await import("svelte-device-info");
+    $isMobile = Device?.isPhone || Device?.isTablet;
+  }
+  onMount(determineMobile);
 
   import "@fortawesome/fontawesome-svg-core/styles.css"; // Import the CSS
   import { browser } from "$app/environment";
   import ScrollPrompt from "$lib/components/ScrollPrompt.svelte";
   import { Input } from "@sveltestrap/sveltestrap";
   import { onMount } from "svelte";
+  import { writable } from "svelte/store";
   config.autoAddCss = false; // Tell Font Awesome to skip adding the CSS automatically since it's being imported above
 
   let visibleSteps = {
@@ -38,9 +41,7 @@
   let chattyBlockText: HTMLSpanElement;
 
   const firstChattyList = [
-    `* WOAH there, pardner!\n* Who said you could ${
-      Device?.isPhone || Device?.isTablet ? "long\n press" : "middle\n  click"
-    } on me?`,
+    `* WOAH there, pardner!\n* Who said you could\n  bypass me?`,
     "* HMM?\n* So you're ASKIN' me to\n  visit a site?",
     "* Okay, just for you,\n  pumpkin.",
     () => (chattyBlockText.style.color = "#6f42c1"),
@@ -122,7 +123,7 @@
             on:mouseleave={doNothing}
             on:contextmenu={(event) => {
               doNothing(event);
-              if (Device?.isPhone || Device?.isTablet) {
+              if ($isMobile) {
                 chattyBlock.progress();
               }
             }}

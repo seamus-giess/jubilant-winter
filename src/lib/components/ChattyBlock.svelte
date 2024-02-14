@@ -148,21 +148,13 @@
 </div>
 
 <style lang="scss">
-    .block-wrapper {
-        position: relative;
-    }
     .chat-box {
-        position: absolute;
+        position: fixed;
         z-index: 1;
-        left: 100%;
-        bottom: 100%;
 
-        @include media-breakpoint-down(sm) {
-            top: 100%;
-            right: 0;
-            left: unset;
-            bottom: unset;
-        }
+        left: 50%;
+        transform: translateX(-50%);
+        top: 1rem;
 
         width: 260px;
         height: 75px;
