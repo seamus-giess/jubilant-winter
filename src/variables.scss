@@ -1,10 +1,13 @@
 /* Variables and mixins declared here will be available in all other SCSS files */
-@import "bootstrap/scss/functions"; /* Override Bootstrap's variables here */
+@import "bootstrap/scss/functions";
+/* Override Bootstrap's variables here */
 
 $headings-font-family: monospace;
 $font-family-base: monospace;
 $body-bg: black;
 $body-color: white;
+$body-secondary-bg: #222;
+$body-tertiary-bg: #333;
 
 @import "bootstrap/scss/variables";
 @import "bootstrap/scss/variables-dark";

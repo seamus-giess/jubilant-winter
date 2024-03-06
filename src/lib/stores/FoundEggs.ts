@@ -3,10 +3,16 @@ import { writable } from "svelte/store";
 
 const eggsInitialState: Eggs = {
     talkingLink: false,
+    isNosy: false,
+    isIncorrigiblyNosy: false,
+    isStillNosy: false,
 };
 
 interface Eggs {
     talkingLink: boolean;
+    isNosy: boolean;
+    isIncorrigiblyNosy: boolean;
+    isStillNosy: boolean;
 };
 
 export function isEggs(object: unknown): object is Eggs {

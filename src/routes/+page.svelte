@@ -6,7 +6,7 @@
   const isMobile = writable<boolean>(false);
   async function determineMobile() {
     const Device = await import("svelte-device-info");
-    $isMobile = Device?.isPhone || Device?.isTablet;
+    $isMobile = Device.isPhone || Device.isTablet;
   }
   onMount(determineMobile);
 
@@ -76,6 +76,20 @@
     event.stopImmediatePropagation();
     return false;
   }
+
+  let isIncorrigiblyNosy = "";
+  let incorrigiblyNosyText = "oh. there will be no need to fill this out...";
+  let isStillNosy = false;
+  onMount(() => {
+    if ($eggs.isIncorrigiblyNosy) {
+      isIncorrigiblyNosy = "yes";
+      incorrigiblyNosyText = "you should not have done that";
+    }
+
+    if ($eggs.isStillNosy) {
+      isStillNosy = true;
+    }
+  });
 </script>
 
 <svelte:window
@@ -123,6 +137,7 @@
             on:mouseleave={doNothing}
             on:contextmenu={(event) => {
               doNothing(event);
+              console.log($isMobile);
               if ($isMobile) {
                 chattyBlock.progress();
               }
@@ -188,7 +203,77 @@
     <ScrollPrompt isVisible={visibleSteps.form} />
   </div>
 
-  <div class="container {visibleSteps.form ? '' : 'd-none'}"></div>
+  <div class="container {visibleSteps.form || true ? '' : 'd-none'}">
+    <form class="text-start" style="width: 300px;">
+      <p>suggestion disposal box</p>
+      <div class="mb-3">
+        <label class="form-label">genius:</label>
+
+        <div class="input-group mb-3">
+          <div class="input-group-text">
+            <input
+              class="form-check-input mt-0"
+              type="checkbox"
+              value="nosy"
+              aria-label="A checkbox to test people's ability to resist clicking unlabelled checkboxes."
+              bind:checked={isStillNosy}
+              on:click={() => {
+                $eggs.isNosy = true;
+                $eggs.isStillNosy = !isStillNosy;
+              }}
+            />
+          </div>
+          <input type="text" class="form-control" placeholder="john doe" />
+        </div>
+      </div>
+      <div class="mb-3">
+        <label
+          class="form-label"
+          class:text-decoration-line-through={isIncorrigiblyNosy}
+          >electronic mail address:</label
+        >
+        <input name="email" type="hidden" value="email-not-filled" />
+
+        <div class="input-group mb-3">
+          <div class="input-group-text">
+            <input
+              class="form-check-input mt-0"
+              type="radio"
+              name="isIncorrigiblyNosy"
+              value="yes"
+              bind:group={isIncorrigiblyNosy}
+              disabled={isIncorrigiblyNosy === "yes"}
+              aria-label="A radio input to test people's ability to resist clicking unlabelled inputs."
+              on:click|once={() => {
+                if ($eggs.isIncorrigiblyNosy) {
+                  return;
+                }
+                isIncorrigiblyNosy = "yes";
+                $eggs.isIncorrigiblyNosy = true;
+                incorrigiblyNosyText = "you shouldn't 'ave done that";
+              }}
+            />
+          </div>
+          <textara
+            class="form-control disabled bg-secondary bg-opacity-25"
+            bind:innerHTML={incorrigiblyNosyText}
+            rows="4"
+            contenteditable="false"
+            disabled
+          ></textara>
+        </div>
+      </div>
+      <div class="mb-3">
+        <label class="form-label">"well thought out" submission:</label>
+        <input
+          type="text"
+          class="form-control"
+          placeholder="monkey to scribble here"
+        />
+      </div>
+      <button type="submit" class="btn btn-primary">do the form thing</button>
+    </form>
+  </div>
 </div>
 
 <style lang="scss">
